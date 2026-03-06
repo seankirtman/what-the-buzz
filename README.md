@@ -10,7 +10,7 @@ get your flowers here
 npm install
 ```
 
-2. Copy `.env.example` to `.env` and set `DATABASE_URL` and `ADMIN_PASSWORD`.
+2. Create a `.env` file with `DATABASE_URL` and `ADMIN_PASSWORD` (see `.env.example` if available).
 
 3. Set up the database:
 
