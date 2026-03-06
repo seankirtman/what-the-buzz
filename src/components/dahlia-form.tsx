@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { Upload, ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,6 +51,9 @@ export function DahliaForm({ initialData }: DahliaFormProps) {
   const router = useRouter();
   const [images, setImages] = useState<string[]>(initialData?.images ?? []);
   const [newImageUrl, setNewImageUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -78,6 +82,55 @@ export function DahliaForm({ initialData }: DahliaFormProps) {
 
   function removeImage(index: number) {
     setImages((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  async function uploadFiles(files: FileList | File[]) {
+    const imageFiles = Array.from(files).filter((f) =>
+      f.type.startsWith("image/")
+    );
+    if (imageFiles.length === 0) {
+      toast.error("Please select image files (JPG, PNG, WebP, etc.)");
+      return;
+    }
+
+    setUploading(true);
+    let successCount = 0;
+
+    for (const file of imageFiles) {
+      try {
+        const body = new FormData();
+        body.append("file", file);
+        const res = await fetch("/api/admin/upload", { method: "POST", body });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error ?? "Upload failed");
+        }
+
+        const { url } = await res.json();
+        setImages((prev) => [...prev, url]);
+        successCount++;
+      } catch (e) {
+        toast.error(
+          `Failed to upload ${file.name}: ${e instanceof Error ? e.message : "Unknown error"}`
+        );
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(
+        `${successCount} image${successCount > 1 ? "s" : ""} uploaded`
+      );
+    }
+    setUploading(false);
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setDragOver(false);
+    if (e.dataTransfer.files.length > 0) {
+      uploadFiles(e.dataTransfer.files);
+    }
   }
 
   async function onSubmit(data: FormData) {
@@ -174,36 +227,82 @@ export function DahliaForm({ initialData }: DahliaFormProps) {
 
       <div>
         <Label>Images</Label>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Paste image URLs (one per line) or add individually
-        </p>
-        <div className="mt-2 flex flex-wrap gap-4">
-          {images.map((url, i) => (
-            <div key={i} className="relative">
-              <img src={url} alt="" className="h-24 w-24 rounded-lg object-cover" />
-              <button
-                type="button"
-                onClick={() => removeImage(i)}
-                className="absolute -right-2 -top-2 rounded-full bg-destructive px-2 py-0.5 text-xs text-white"
-              >
-                ×
-              </button>
-            </div>
-          ))}
-          <div className="flex flex-col gap-1">
-            <div className="flex gap-1">
-              <Input
-                placeholder="Paste image URL"
-                className="w-48"
-                value={newImageUrl}
-                onChange={(e) => setNewImageUrl(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addImageUrl())}
-              />
-              <Button type="button" variant="outline" size="sm" onClick={addImageUrl}>
-                Add
-              </Button>
-            </div>
+
+        {images.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-4">
+            {images.map((url, i) => (
+              <div key={i} className="relative">
+                <img src={url} alt="" className="h-24 w-24 rounded-lg object-cover" />
+                <button
+                  type="button"
+                  onClick={() => removeImage(i)}
+                  className="absolute -right-2 -top-2 rounded-full bg-destructive px-2 py-0.5 text-xs text-white"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
           </div>
+        )}
+
+        <div
+          className={`mt-3 flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors ${
+            dragOver
+              ? "border-rose-400 bg-rose-50"
+              : "border-sage-200 hover:border-rose-300 hover:bg-sage-50/50"
+          } ${uploading ? "pointer-events-none opacity-60" : ""}`}
+          onClick={() => fileInputRef.current?.click()}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragOver(true);
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={handleDrop}
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={(e) => {
+              if (e.target.files && e.target.files.length > 0) {
+                uploadFiles(e.target.files);
+                e.target.value = "";
+              }
+            }}
+          />
+          {uploading ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Upload className="size-5 animate-pulse" />
+              Uploading...
+            </div>
+          ) : (
+            <>
+              <ImagePlus className="size-8 text-muted-foreground/60" />
+              <p className="mt-2 text-sm font-medium text-muted-foreground">
+                Click to upload or drag &amp; drop
+              </p>
+              <p className="text-xs text-muted-foreground/60">
+                JPG, PNG, WebP up to 10MB
+              </p>
+            </>
+          )}
+        </div>
+
+        <div className="mt-3 flex gap-1">
+          <Input
+            placeholder="Or paste image URL"
+            className="flex-1"
+            value={newImageUrl}
+            onChange={(e) => setNewImageUrl(e.target.value)}
+            onKeyDown={(e) =>
+              e.key === "Enter" && (e.preventDefault(), addImageUrl())
+            }
+          />
+          <Button type="button" variant="outline" size="sm" onClick={addImageUrl}>
+            Add URL
+          </Button>
         </div>
       </div>
 
