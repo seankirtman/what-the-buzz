@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { Badge } from "@/components/ui/badge";
+import { AddToCart } from "@/components/add-to-cart";
 
 export default async function DahliaDetailPage({
   params,
@@ -88,12 +89,12 @@ export default async function DahliaDetailPage({
             </p>
 
             {dahlia.inStock && (
-              <Link
-                href={`/contact?dahlia=${dahlia.slug}`}
-                className="mt-8 block w-full rounded-lg bg-rose-800 px-6 py-3 text-center font-serif text-lg font-medium text-white transition-colors hover:bg-rose-900 focus:outline-none focus:ring-2 focus:ring-rose-600 focus:ring-offset-2"
-              >
-                Message Dorrie Now
-              </Link>
+              <AddToCart
+                slug={dahlia.slug}
+                name={dahlia.name}
+                price={dahlia.price}
+                inStock={dahlia.inStock}
+              />
             )}
           </div>
         </div>

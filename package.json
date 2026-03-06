@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "postinstall": "prisma generate",
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && prisma migrate deploy && next build",
     "start": "next start",
     "lint": "eslint",
     "db:seed": "npx tsx prisma/seed.ts"
@@ -12,14 +13,17 @@
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@prisma/adapter-better-sqlite3": "^7.4.2",
+    "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.2",
     "better-sqlite3": "^12.6.2",
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.9.0",
     "clsx": "^2.1.1",
+    "framer-motion": "^12.35.0",
     "lucide-react": "^0.577.0",
     "next": "16.1.6",
     "next-cloudinary": "^6.17.5",
+    "pg": "^8.20.0",
     "prisma": "^7.4.2",
     "radix-ui": "^1.4.3",
     "react": "19.2.3",

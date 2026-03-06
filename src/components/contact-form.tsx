@@ -9,11 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useCart } from "@/lib/cart-context";
 
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Valid email is required"),
-  qty: z.string().optional(),
   deliveryMethod: z.enum(["pickup", "shipping"]),
   pickupTime: z.string().optional(),
   phone: z.string().optional(),
@@ -29,6 +29,8 @@ interface ContactFormProps {
 }
 
 export function ContactForm({ dahliaSlug, dahliaName }: ContactFormProps) {
+  const cart = useCart();
+  const items = cart.items;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormData>({
@@ -36,7 +38,6 @@ export function ContactForm({ dahliaSlug, dahliaName }: ContactFormProps) {
     defaultValues: {
       name: "",
       email: "",
-      qty: "",
       deliveryMethod: "pickup",
       pickupTime: "",
       phone: "",
@@ -47,6 +48,10 @@ export function ContactForm({ dahliaSlug, dahliaName }: ContactFormProps) {
 
   const deliveryMethod = form.watch("deliveryMethod");
 
+  const cartItems = items.length > 0 ? items : dahliaSlug && dahliaName
+    ? [{ slug: dahliaSlug, name: dahliaName, price: 0, qty: 1 }]
+    : [];
+
   async function onSubmit(data: FormData) {
     setIsSubmitting(true);
     try {
@@ -55,8 +60,9 @@ export function ContactForm({ dahliaSlug, dahliaName }: ContactFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...data,
-          dahliaName,
-          dahliaSlug,
+          cartItems: items.length > 0 ? items : (dahliaSlug && dahliaName
+            ? [{ slug: dahliaSlug, name: dahliaName, price: 0, qty: 1 }]
+            : []),
         }),
       });
 
@@ -67,6 +73,7 @@ export function ContactForm({ dahliaSlug, dahliaName }: ContactFormProps) {
 
       toast.success("Message sent! Dorrie will get back to you soon.");
       form.reset();
+      if (cart && items.length > 0) cart.clearCart();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to send message");
     } finally {
@@ -79,10 +86,46 @@ export function ContactForm({ dahliaSlug, dahliaName }: ContactFormProps) {
       onSubmit={form.handleSubmit(onSubmit)}
       className="mt-8 space-y-6 rounded-xl border border-sage-200/60 bg-white p-6 shadow-sm"
     >
-      {dahliaName && (
-        <p className="rounded-lg bg-sage-50 p-3 text-sm text-muted-foreground">
-          Inquiring about: <strong className="text-foreground">{dahliaName}</strong>
-        </p>
+      {cartItems.length > 0 && (
+        <div className="rounded-lg bg-sage-50 p-4">
+          <p className="mb-2 font-medium text-foreground">Your cart</p>
+          <ul className="space-y-2 text-sm text-muted-foreground">
+            {cartItems.map((item) => (
+              <li
+                key={item.slug}
+                className="flex items-center justify-between gap-2"
+              >
+                <span>
+                  {item.name} × {item.qty}
+                </span>
+                <span className="flex items-center gap-2">
+                  {item.price > 0 && (
+                    <span className="font-medium text-foreground">
+                      ${(item.price * item.qty).toFixed(2)}
+                    </span>
+                  )}
+                  {cart && items.some((i) => i.slug === item.slug) && (
+                    <button
+                      type="button"
+                      onClick={() => cart.removeItem(item.slug)}
+                      className="text-rose-600 hover:underline"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </span>
+              </li>
+            ))}
+          </ul>
+          {items.length > 0 && (
+            <p className="mt-2 text-sm font-medium text-foreground">
+              Total: $
+              {items
+                .reduce((sum, i) => sum + i.price * i.qty, 0)
+                .toFixed(2)}
+            </p>
+          )}
+        </div>
       )}
 
       <div>
@@ -114,18 +157,6 @@ export function ContactForm({ dahliaSlug, dahliaName }: ContactFormProps) {
             {form.formState.errors.email.message}
           </p>
         )}
-      </div>
-
-      <div>
-        <Label htmlFor="qty">Quantity</Label>
-        <Input
-          id="qty"
-          type="number"
-          min="1"
-          {...form.register("qty")}
-          className="mt-1"
-          placeholder="How many?"
-        />
       </div>
 
       <div>

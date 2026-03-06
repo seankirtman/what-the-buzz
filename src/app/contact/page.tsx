@@ -31,7 +31,7 @@ export default async function ContactPage({
 
         <h1 className="font-serif text-3xl font-bold">Message Dorrie</h1>
         <p className="mt-2 text-muted-foreground">
-          Send a message to request flowers. Include your preferred delivery method.
+          Review your cart and send a message to request your flowers. Include your preferred delivery method.
         </p>
 
         <ContactForm dahliaSlug={dahliaSlug} dahliaName={dahliaName} />

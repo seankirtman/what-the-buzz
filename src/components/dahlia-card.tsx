@@ -16,7 +16,7 @@ export function DahliaCard({ dahlia }: DahliaCardProps) {
     "https://images.unsplash.com/photo-1597848212624-a19eb35e2651?w=800";
 
   return (
-    <Link href={`/dahlias/${dahlia.slug}`}>
+    <Link href={`/dahlias/${dahlia.slug}`} className="block">
       <Card className="group overflow-hidden border-sage-200/60 bg-white/80 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
         <div className="relative aspect-[4/3] overflow-hidden bg-sage-50">
           <Image

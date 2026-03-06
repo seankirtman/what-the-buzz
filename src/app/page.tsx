@@ -36,7 +36,7 @@ export default async function HomePage({
   return (
     <div className="min-h-screen">
       <header className="relative overflow-hidden bg-gradient-to-b from-sage-100/80 to-background">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1597848212624-a19eb35e2651?w=1920')] bg-cover bg-center opacity-20" />
+        <div className="absolute inset-0 bg-[url('/hero-dahlias.png')] bg-cover bg-center opacity-20" />
         <div className="relative mx-auto max-w-6xl px-4 py-20 text-center sm:py-28">
           <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl">
             What&apos;s The Buzz Gardens
@@ -81,12 +81,21 @@ export default async function HomePage({
       <footer className="mt-16 border-t border-sage-200/60 bg-sage-50/30 py-8">
         <div className="mx-auto max-w-6xl px-4 text-center text-sm text-muted-foreground">
           <p>What&apos;s The Buzz Gardens — Dahlia flowers for every occasion</p>
-          <Link
-            href="/contact"
-            className="mt-2 inline-block text-rose-800 hover:underline"
-          >
-            Message Dorrie
-          </Link>
+          <div className="mt-2 flex items-center justify-center gap-4">
+            <Link
+              href="/cart"
+              className="text-rose-800 hover:underline"
+            >
+              View Cart
+            </Link>
+            <span className="text-sage-200">·</span>
+            <Link
+              href="/contact"
+              className="text-rose-800 hover:underline"
+            >
+              Message Dorrie
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
