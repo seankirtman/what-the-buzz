@@ -116,9 +116,6 @@ export default function CartPage() {
                   ${total.toFixed(2)}
                 </span>
               </div>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Taxes and shipping calculated when you message Dorrie.
-              </p>
 
               <Link
                 href="/contact"
