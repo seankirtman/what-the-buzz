@@ -4,9 +4,13 @@ const url = process.env.DATABASE_URL ?? "file:./prisma/dev.db";
 const usePostgres =
   url.startsWith("postgresql://") || url.startsWith("postgres://");
 
+function requireAtRuntime(moduleName: string) {
+  return (eval("require") as NodeRequire)(moduleName);
+}
+
 const adapter = usePostgres
-  ? new (require("@prisma/adapter-pg").PrismaPg)({ connectionString: url })
-  : new (require("@prisma/adapter-better-sqlite3").PrismaBetterSqlite3)({
+  ? new (requireAtRuntime("@prisma/adapter-pg").PrismaPg)({ connectionString: url })
+  : new (requireAtRuntime(["@prisma", ["adapter", "better", "sqlite3"].join("-")].join("/")).PrismaBetterSqlite3)({
       url,
     });
 
