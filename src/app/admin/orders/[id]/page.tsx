@@ -65,7 +65,7 @@ export default async function OrderDetailPage({
             </p>
             <p>
               <strong>Submitted:</strong>{" "}
-              {new Date(order.createdAt).toLocaleString()}
+              {new Date(order.createdAt).toLocaleString("en-US", { timeZone: "America/New_York" })}
             </p>
           </CardContent>
         </Card>

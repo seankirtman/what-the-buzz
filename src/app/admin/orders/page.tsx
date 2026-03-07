@@ -60,7 +60,7 @@ export default async function AdminOrdersPage() {
                             {order.name} &lt;{order.email}&gt;
                           </p>
                           <p className="mt-1 text-sm text-muted-foreground">
-                            {new Date(order.createdAt).toLocaleString()} ·{" "}
+                            {new Date(order.createdAt).toLocaleString("en-US", { timeZone: "America/New_York" })} ·{" "}
                             {order.deliveryMethod === "pickup"
                               ? "Local Pickup"
                               : "Shipping"}
