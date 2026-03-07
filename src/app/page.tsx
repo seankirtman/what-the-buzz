@@ -10,13 +10,17 @@ async function getDahlias(filters?: {
   category?: string;
   color?: string;
 }) {
+  const where: { category?: string; color?: string } = {};
+  if (filters?.category) where.category = filters.category;
+  if (filters?.color) where.color = filters.color;
+
   const dahlias = await prisma.dahlia.findMany({
-    where: {
-      ...(filters?.category && { category: filters.category }),
-      ...(filters?.color && { color: filters.color }),
-    },
-    orderBy: { name: "asc" },
+    where,
+    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
   });
+
+  // Out-of-stock items last (sort in memory to avoid SQLite boolean orderBy issues)
+  dahlias.sort((a, b) => (a.inStock === b.inStock ? 0 : a.inStock ? -1 : 1));
 
   return dahlias.map((d) => ({
     ...d,
@@ -24,15 +28,21 @@ async function getDahlias(filters?: {
   }));
 }
 
+function toSingle(value: string | string[] | undefined): string | undefined {
+  if (value == null) return undefined;
+  const s = Array.isArray(value) ? value[0] : value;
+  return s && s !== "All" ? s : undefined;
+}
+
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string; color?: string }>;
+  searchParams: Promise<{ category?: string | string[]; color?: string | string[] }>;
 }) {
   const params = await searchParams;
   const dahlias = await getDahlias({
-    category: params.category && params.category !== "All" ? params.category : undefined,
-    color: params.color && params.color !== "All" ? params.color : undefined,
+    category: toSingle(params?.category),
+    color: toSingle(params?.color),
   });
 
   return (

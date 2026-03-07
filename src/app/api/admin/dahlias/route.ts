@@ -31,6 +31,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const maxOrder = await prisma.dahlia
+      .aggregate({ _max: { sortOrder: true } })
+      .then((r) => (r._max.sortOrder ?? -1) + 1);
+
     const dahlia = await prisma.dahlia.create({
       data: {
         name,
@@ -45,6 +49,7 @@ export async function POST(request: NextRequest) {
         availableForShipping: availableForShipping !== false,
         availableForPickup: availableForPickup !== false,
         inStock: inStock !== false,
+        sortOrder: maxOrder,
       },
     });
 

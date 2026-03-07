@@ -1,12 +1,15 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
 
-const connectionString = process.env.DATABASE_URL;
-if (!connectionString) {
-  throw new Error("DATABASE_URL environment variable is not set");
-}
+const url = process.env.DATABASE_URL ?? "file:./prisma/dev.db";
+const usePostgres =
+  url.startsWith("postgresql://") || url.startsWith("postgres://");
 
-const adapter = new PrismaPg({ connectionString });
+const adapter = usePostgres
+  ? new (require("@prisma/adapter-pg").PrismaPg)({ connectionString: url })
+  : new (require("@prisma/adapter-better-sqlite3").PrismaBetterSqlite3)({
+      url,
+    });
+
 const prisma = new PrismaClient({ adapter });
 
 const sampleDahlias = [

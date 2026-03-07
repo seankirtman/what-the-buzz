@@ -1,21 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { v2 as cloudinary } from "cloudinary";
 import { isAdmin } from "@/lib/admin-auth";
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
 
 export async function POST(request: NextRequest) {
   if (!(await isAdmin())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } =
-    process.env;
-  if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+  const apiKey = process.env.CLOUDINARY_API_KEY;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+  if (!cloudName || !apiKey || !apiSecret) {
     return NextResponse.json(
       { error: "Cloudinary is not configured" },
       { status: 500 }
@@ -32,24 +27,41 @@ export async function POST(request: NextRequest) {
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+    const base64 = `data:${file.type};base64,${buffer.toString("base64")}`;
 
-    const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
-      cloudinary.uploader
-        .upload_stream(
-          { folder: "whats-the-buzz", resource_type: "image" },
-          (error, result) => {
-            if (error || !result) reject(error ?? new Error("Upload failed"));
-            else resolve(result);
-          }
-        )
-        .end(buffer);
-    });
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const { createHash } = await import("crypto");
+    const signature = createHash("sha1")
+      .update(`folder=whats-the-buzz&timestamp=${timestamp}${apiSecret}`)
+      .digest("hex");
+
+    const uploadForm = new FormData();
+    uploadForm.append("file", base64);
+    uploadForm.append("folder", "whats-the-buzz");
+    uploadForm.append("timestamp", timestamp);
+    uploadForm.append("api_key", apiKey);
+    uploadForm.append("signature", signature);
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+      { method: "POST", body: uploadForm }
+    );
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      console.error("Cloudinary error:", result);
+      return NextResponse.json(
+        { error: result?.error?.message ?? "Cloudinary upload failed" },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ url: result.secure_url });
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(
-      { error: "Failed to upload image" },
+      { error: error instanceof Error ? error.message : "Failed to upload image" },
       { status: 500 }
     );
   }

@@ -4,12 +4,12 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DeleteDahliaButton } from "@/components/delete-dahlia-button";
 import { LogoutButton } from "@/components/logout-button";
+import { AdminDahliaList } from "@/components/admin-dahlia-list";
 
 export default async function AdminDashboardPage() {
   const dahlias = await prisma.dahlia.findMany({
-    orderBy: { name: "asc" },
+    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
   });
 
   const inStockCount = dahlias.filter((d) => d.inStock).length;
@@ -54,29 +54,7 @@ export default async function AdminDashboardPage() {
             <CardTitle>Dahlias</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {dahlias.map((d) => (
-                <div
-                  key={d.id}
-                  className="flex items-center justify-between rounded-lg border border-sage-200/60 bg-white p-4"
-                >
-                  <div>
-                    <p className="font-medium">{d.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {d.category} · {d.color} · ${d.price.toFixed(2)}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Link href={`/admin/dahlias/${d.id}/edit`}>
-                      <Button variant="outline" size="sm">
-                        Edit
-                      </Button>
-                    </Link>
-                    <DeleteDahliaButton id={d.id} name={d.name} />
-                  </div>
-                </div>
-              ))}
-            </div>
+            <AdminDahliaList dahlias={dahlias} />
             {dahlias.length === 0 && (
               <p className="py-8 text-center text-muted-foreground">
                 No dahlias yet. Add your first one!

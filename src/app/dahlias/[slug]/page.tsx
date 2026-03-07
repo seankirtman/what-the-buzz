@@ -1,11 +1,11 @@
 export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { Badge } from "@/components/ui/badge";
 import { AddToCart } from "@/components/add-to-cart";
+import { DahliaImageGallery } from "@/components/dahlia-image-gallery";
 
 export default async function DahliaDetailPage({
   params,
@@ -20,7 +20,6 @@ export default async function DahliaDetailPage({
   if (!dahlia) notFound();
 
   const images = JSON.parse(dahlia.images) as string[];
-  const imageUrl = images[0] ?? "https://images.unsplash.com/photo-1597848212624-a19eb35e2651?w=800";
 
   return (
     <div className="min-h-screen">
@@ -33,37 +32,7 @@ export default async function DahliaDetailPage({
         </Link>
 
         <div className="grid gap-8 lg:grid-cols-2">
-          <div className="space-y-4">
-            <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-sage-50">
-              <Image
-                src={imageUrl}
-                alt={dahlia.name}
-                fill
-                className="object-cover"
-                priority
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                unoptimized={imageUrl.startsWith("http")}
-              />
-            </div>
-            {images.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                {images.map((img, i) => (
-                  <div
-                    key={i}
-                    className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg"
-                  >
-                    <Image
-                      src={img}
-                      alt={`${dahlia.name} ${i + 1}`}
-                      fill
-                      className="object-cover"
-                      unoptimized={img.startsWith("http")}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <DahliaImageGallery images={images} name={dahlia.name} />
 
           <div>
             <h1 className="font-serif text-3xl font-bold text-foreground sm:text-4xl">
