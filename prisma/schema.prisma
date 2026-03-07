@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model Dahlia {
@@ -20,7 +20,22 @@ model Dahlia {
   availableForShipping  Boolean  @default(true)
   availableForPickup    Boolean  @default(true)
   inStock               Boolean  @default(true)
+  totalQty              Int      @default(0)
+  qtySold               Int      @default(0)
   sortOrder             Int      @default(0)
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
+}
+
+model OrderInquiry {
+  id              Int      @id @default(autoincrement())
+  name            String
+  email           String
+  deliveryMethod  String
+  pickupTime      String?
+  phone           String?
+  shippingAddress String?
+  message         String?
+  cartItems       String
+  createdAt       DateTime @default(now())
 }
