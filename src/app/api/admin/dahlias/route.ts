@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { isSortOrderUnsupportedError, prisma } from "@/lib/db";
 import { isAdmin } from "@/lib/admin-auth";
 
 export async function POST(request: NextRequest) {
@@ -31,9 +31,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const maxOrder = await prisma.dahlia
-      .aggregate({ _max: { sortOrder: true } })
-      .then((r) => (r._max.sortOrder ?? -1) + 1);
+    let sortOrderData = {};
+    try {
+      const maxOrder = await prisma.dahlia
+        .aggregate({ _max: { sortOrder: true } })
+        .then((r) => (r._max.sortOrder ?? -1) + 1);
+      sortOrderData = { sortOrder: maxOrder };
+    } catch (error) {
+      if (!isSortOrderUnsupportedError(error)) throw error;
+    }
 
     const dahlia = await prisma.dahlia.create({
       data: {
@@ -49,7 +55,7 @@ export async function POST(request: NextRequest) {
         availableForShipping: availableForShipping !== false,
         availableForPickup: availableForPickup !== false,
         inStock: inStock !== false,
-        sortOrder: maxOrder,
+        ...sortOrderData,
       },
     });
 

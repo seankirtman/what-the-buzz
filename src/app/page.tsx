@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { Suspense } from "react";
-import { prisma } from "@/lib/db";
+import { isSortOrderUnsupportedError, prisma } from "@/lib/db";
 import { DahliaCard } from "@/components/dahlia-card";
 import { DahliaFilters } from "@/components/dahlia-filters";
 
@@ -14,10 +14,18 @@ async function getDahlias(filters?: {
   if (filters?.category) where.category = filters.category;
   if (filters?.color) where.color = filters.color;
 
-  const dahlias = await prisma.dahlia.findMany({
-    where,
-    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-  });
+  const dahlias = await prisma.dahlia
+    .findMany({
+      where,
+      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+    })
+    .catch((error) => {
+      if (!isSortOrderUnsupportedError(error)) throw error;
+      return prisma.dahlia.findMany({
+        where,
+        orderBy: [{ name: "asc" }],
+      });
+    });
 
   // Out-of-stock items last (sort in memory to avoid SQLite boolean orderBy issues)
   dahlias.sort((a, b) => (a.inStock === b.inStock ? 0 : a.inStock ? -1 : 1));

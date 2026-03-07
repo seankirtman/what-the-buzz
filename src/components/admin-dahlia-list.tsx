@@ -30,7 +30,7 @@ interface Dahlia {
   category: string;
   color: string;
   price: number;
-  sortOrder: number;
+  sortOrder?: number;
 }
 
 interface AdminDahliaListProps {
@@ -96,7 +96,7 @@ function SortableItem({
 export function AdminDahliaList({ dahlias: initialDahlias }: AdminDahliaListProps) {
   const router = useRouter();
   const [dahlias, setDahlias] = useState(
-    [...initialDahlias].sort((a, b) => a.sortOrder - b.sortOrder)
+    [...initialDahlias].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
   );
 
   const sensors = useSensors(

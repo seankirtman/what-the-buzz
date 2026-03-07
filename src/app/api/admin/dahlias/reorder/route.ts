@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { isSortOrderUnsupportedError, prisma } from "@/lib/db";
 import { isAdmin } from "@/lib/admin-auth";
 
 export async function PUT(request: NextRequest) {
@@ -18,14 +18,22 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    await prisma.$transaction(
-      items.map(({ id, sortOrder }) =>
-        prisma.dahlia.update({
-          where: { id },
-          data: { sortOrder },
-        })
-      )
-    );
+    try {
+      await prisma.$transaction(
+        items.map(({ id, sortOrder }) =>
+          prisma.dahlia.update({
+            where: { id },
+            data: { sortOrder },
+          })
+        )
+      );
+    } catch (error) {
+      if (!isSortOrderUnsupportedError(error)) throw error;
+      return NextResponse.json(
+        { success: false, warning: "Sort order is not available in this deployment yet." },
+        { status: 200 }
+      );
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

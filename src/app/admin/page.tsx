@@ -1,16 +1,23 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { prisma } from "@/lib/db";
+import { isSortOrderUnsupportedError, prisma } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LogoutButton } from "@/components/logout-button";
 import { AdminDahliaList } from "@/components/admin-dahlia-list";
 
 export default async function AdminDashboardPage() {
-  const dahlias = await prisma.dahlia.findMany({
-    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-  });
+  const dahlias = await prisma.dahlia
+    .findMany({
+      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+    })
+    .catch((error) => {
+      if (!isSortOrderUnsupportedError(error)) throw error;
+      return prisma.dahlia.findMany({
+        orderBy: [{ name: "asc" }],
+      });
+    });
 
   const inStockCount = dahlias.filter((d) => d.inStock).length;
 

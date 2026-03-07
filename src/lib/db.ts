@@ -6,6 +6,13 @@ function requireAtRuntime(moduleName: string) {
   return (eval("require") as NodeRequire)(moduleName);
 }
 
+export function isSortOrderUnsupportedError(error: unknown) {
+  return (
+    error instanceof Error &&
+    error.message.includes("Unknown argument `sortOrder`")
+  );
+}
+
 function createPrismaClient() {
   const url = process.env.DATABASE_URL ?? "file:./prisma/dev.db";
   const usePostgres =
