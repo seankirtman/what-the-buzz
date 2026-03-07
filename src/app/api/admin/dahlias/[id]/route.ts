@@ -26,6 +26,8 @@ export async function PUT(
       availableForShipping,
       availableForPickup,
       inStock,
+      totalQty,
+      qtySold,
     } = body;
 
     const dahlia = await prisma.dahlia.update({
@@ -47,6 +49,8 @@ export async function PUT(
         ...(availableForShipping != null && { availableForShipping }),
         ...(availableForPickup != null && { availableForPickup }),
         ...(inStock != null && { inStock }),
+        ...(totalQty != null && { totalQty: typeof totalQty === "number" ? totalQty : parseInt(totalQty, 10) || 0 }),
+        ...(qtySold != null && { qtySold: typeof qtySold === "number" ? qtySold : parseInt(qtySold, 10) || 0 }),
       },
     });
 

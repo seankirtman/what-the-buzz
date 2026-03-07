@@ -20,6 +20,14 @@ export default async function AdminDashboardPage() {
     });
 
   const inStockCount = dahlias.filter((d) => d.inStock).length;
+  let ordersCount = 0;
+  if (prisma.orderInquiry) {
+    try {
+      ordersCount = await prisma.orderInquiry.count();
+    } catch {
+      // ignore
+    }
+  }
 
   return (
     <div className="min-h-screen bg-sage-50/30">
@@ -30,6 +38,12 @@ export default async function AdminDashboardPage() {
             <Link href="/">
               <Button variant="outline">View site</Button>
             </Link>
+            <Link href="/admin/orders">
+              <Button variant="outline">Orders</Button>
+            </Link>
+            <Link href="/admin/inventory">
+              <Button variant="outline">Inventory</Button>
+            </Link>
             <Link href="/admin/dahlias/new">
               <Button>Add Dahlia</Button>
             </Link>
@@ -37,7 +51,7 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="mb-8 grid gap-4 sm:grid-cols-2">
+        <div className="mb-8 grid gap-4 sm:grid-cols-3">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-medium">Total listings</CardTitle>
@@ -54,6 +68,16 @@ export default async function AdminDashboardPage() {
               <p className="text-2xl font-bold">{inStockCount}</p>
             </CardContent>
           </Card>
+          <Link href="/admin/orders">
+            <Card className="transition-colors hover:bg-sage-50/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-medium">Orders</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">{ordersCount}</p>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         <Card>

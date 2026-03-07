@@ -22,6 +22,7 @@ export async function POST(request: NextRequest) {
       availableForShipping,
       availableForPickup,
       inStock,
+      totalQty,
     } = body;
 
     if (!name || !slug || !description || !detailedDescription || price == null) {
@@ -55,6 +56,7 @@ export async function POST(request: NextRequest) {
         availableForShipping: availableForShipping !== false,
         availableForPickup: availableForPickup !== false,
         inStock: inStock !== false,
+        totalQty: typeof totalQty === "number" ? totalQty : parseInt(totalQty, 10) || 0,
         ...sortOrderData,
       },
     });

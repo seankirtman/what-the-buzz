@@ -25,6 +25,7 @@ const schema = z.object({
   availableForShipping: z.boolean(),
   availableForPickup: z.boolean(),
   inStock: z.boolean(),
+  totalQty: z.string(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -44,6 +45,7 @@ interface DahliaFormProps {
     availableForShipping: boolean;
     availableForPickup: boolean;
     inStock: boolean;
+    totalQty?: number;
   };
 }
 
@@ -69,6 +71,7 @@ export function DahliaForm({ initialData }: DahliaFormProps) {
       availableForShipping: initialData?.availableForShipping ?? true,
       availableForPickup: initialData?.availableForPickup ?? true,
       inStock: initialData?.inStock ?? true,
+      totalQty: initialData?.totalQty?.toString() ?? "0",
     },
   });
 
@@ -139,6 +142,7 @@ export function DahliaForm({ initialData }: DahliaFormProps) {
       const payload = {
         ...data,
         price: parseFloat(data.price),
+        totalQty: parseInt(data.totalQty, 10) || 0,
         images,
       };
 
@@ -335,6 +339,21 @@ export function DahliaForm({ initialData }: DahliaFormProps) {
           <input type="checkbox" {...form.register("inStock")} className="h-4 w-4" />
           In stock
         </label>
+      </div>
+
+      <div>
+        <Label htmlFor="totalQty">Total quantity (inventory)</Label>
+        <Input
+          id="totalQty"
+          type="number"
+          min="0"
+          {...form.register("totalQty")}
+          className="mt-1 w-24"
+          placeholder="0"
+        />
+        <p className="mt-1 text-xs text-muted-foreground">
+          Starting inventory. Qty sold updates automatically from orders.
+        </p>
       </div>
 
       <div className="flex gap-2">

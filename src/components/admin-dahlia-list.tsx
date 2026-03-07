@@ -31,6 +31,7 @@ interface Dahlia {
   color: string;
   price: number;
   sortOrder?: number;
+  inStock?: boolean;
 }
 
 interface AdminDahliaListProps {
@@ -78,6 +79,9 @@ function SortableItem({
           <p className="font-medium">{dahlia.name}</p>
           <p className="text-sm text-muted-foreground">
             {dahlia.category} · {dahlia.color} · ${dahlia.price.toFixed(2)}
+            {dahlia.inStock === false && (
+              <span className="ml-2 font-medium text-destructive">· Out of stock</span>
+            )}
           </p>
         </div>
       </div>
