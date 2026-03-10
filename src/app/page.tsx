@@ -56,7 +56,7 @@ export default async function HomePage({
   return (
     <div className="min-h-screen">
       <header className="relative min-h-[45vh] overflow-hidden bg-gradient-to-b from-sage-100/80 to-background">
-        <div className="absolute inset-0 bg-[url('/hero-dahlias.png')] bg-cover bg-center opacity-80" />
+        <div className="absolute inset-0 bg-[url('/hero-dahlias.png')] bg-cover bg-center opacity-100" />
       </header>
 
       <section className="border-b border-sage-200/60 bg-background py-12">
