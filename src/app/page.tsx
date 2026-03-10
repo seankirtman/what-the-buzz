@@ -55,9 +55,12 @@ export default async function HomePage({
 
   return (
     <div className="min-h-screen">
-      <header className="relative overflow-hidden bg-gradient-to-b from-sage-100/80 to-background">
-        <div className="absolute inset-0 bg-[url('/hero-dahlias.png')] bg-cover bg-center opacity-20" />
-        <div className="relative mx-auto max-w-6xl px-4 py-20 text-center sm:py-28">
+      <header className="relative min-h-[45vh] overflow-hidden bg-gradient-to-b from-sage-100/80 to-background">
+        <div className="absolute inset-0 bg-[url('/hero-dahlias.png')] bg-cover bg-center opacity-80" />
+      </header>
+
+      <section className="border-b border-sage-200/60 bg-background py-12">
+        <div className="mx-auto max-w-6xl px-4 text-center">
           <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl">
             What&apos;s The Buzz Gardens
           </h1>
@@ -68,7 +71,7 @@ export default async function HomePage({
             Browse our collection and message Dorrie to request your favorites
           </p>
         </div>
-      </header>
+      </section>
 
       <section className="border-b border-sage-200/60 bg-white/50">
         <div className="mx-auto max-w-3xl px-4 py-12 text-center">
