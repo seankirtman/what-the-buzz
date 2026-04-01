@@ -13,18 +13,20 @@ export function remainingQty(d: { totalQty: unknown; qtySold: unknown }): number
 
 /**
  * Public catalog availability:
- * - If inventory has ever been tracked (`totalQty > 0` or `qtySold > 0`), trust remaining count only.
- * - Otherwise (`totalQty === 0` and `qtySold === 0`), use legacy `inStock` checkbox (new listings).
+ * - `inStock` off → always unavailable (manual out of stock; qty fields are not changed).
+ * - `inStock` on → if inventory has been set (`totalQty > 0` or `qtySold > 0`), require remaining > 0.
+ * - `inStock` on and no inventory numbers → available.
  */
 export function isListedAsAvailable(d: {
   totalQty?: unknown;
   qtySold?: unknown;
   inStock: boolean;
 }): boolean {
+  if (!d.inStock) return false;
   const totalQty = qty(d.totalQty);
   const qtySold = qty(d.qtySold);
   const remaining = Math.max(0, totalQty - qtySold);
   const inventoryTouched = totalQty > 0 || qtySold > 0;
   if (inventoryTouched) return remaining > 0;
-  return d.inStock;
+  return true;
 }

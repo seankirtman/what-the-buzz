@@ -42,6 +42,9 @@ export async function POST(request: NextRequest) {
       if (!isSortOrderUnsupportedError(error)) throw error;
     }
 
+    const tq =
+      typeof totalQty === "number" ? totalQty : parseInt(String(totalQty), 10) || 0;
+
     const dahlia = await prisma.dahlia.create({
       data: {
         name,
@@ -56,7 +59,7 @@ export async function POST(request: NextRequest) {
         availableForShipping: availableForShipping !== false,
         availableForPickup: availableForPickup !== false,
         inStock: inStock !== false,
-        totalQty: typeof totalQty === "number" ? totalQty : parseInt(totalQty, 10) || 0,
+        totalQty: tq,
         ...sortOrderData,
       },
     });
