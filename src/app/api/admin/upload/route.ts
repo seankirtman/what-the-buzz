@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdmin } from "@/lib/admin-auth";
+import { normalizeImageMimeType } from "@/lib/image-upload-mime";
 
 export async function POST(request: NextRequest) {
   if (!(await isAdmin())) {
@@ -27,7 +28,8 @@ export async function POST(request: NextRequest) {
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const base64 = `data:${file.type};base64,${buffer.toString("base64")}`;
+    const mime = normalizeImageMimeType(file);
+    const base64 = `data:${mime};base64,${buffer.toString("base64")}`;
 
     const timestamp = Math.floor(Date.now() / 1000).toString();
     const { createHash } = await import("crypto");

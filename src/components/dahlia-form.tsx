@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { isUploadableImageFile } from "@/lib/image-upload-mime";
 
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -88,11 +89,9 @@ export function DahliaForm({ initialData }: DahliaFormProps) {
   }
 
   async function uploadFiles(files: FileList | File[]) {
-    const imageFiles = Array.from(files).filter((f) =>
-      f.type.startsWith("image/")
-    );
+    const imageFiles = Array.from(files).filter(isUploadableImageFile);
     if (imageFiles.length === 0) {
-      toast.error("Please select image files (JPG, PNG, WebP, etc.)");
+      toast.error("Please select image files (JPG, PNG, WebP, HEIC, etc.)");
       return;
     }
 
@@ -267,7 +266,7 @@ export function DahliaForm({ initialData }: DahliaFormProps) {
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,.heic,.heif"
             multiple
             className="hidden"
             onChange={(e) => {
@@ -289,7 +288,7 @@ export function DahliaForm({ initialData }: DahliaFormProps) {
                 Click to upload or drag &amp; drop
               </p>
               <p className="text-xs text-muted-foreground/60">
-                JPG, PNG, WebP up to 10MB
+                JPG, PNG, WebP, HEIC up to 10MB
               </p>
             </>
           )}
