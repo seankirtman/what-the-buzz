@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { Suspense } from "react";
 import { isSortOrderUnsupportedError, prisma } from "@/lib/db";
+import { getHeroCoverUrl } from "@/lib/site-settings";
 import { DahliaCard } from "@/components/dahlia-card";
 import { DahliaFilters } from "@/components/dahlia-filters";
 
@@ -48,15 +49,21 @@ export default async function HomePage({
   searchParams: Promise<{ category?: string | string[]; color?: string | string[] }>;
 }) {
   const params = await searchParams;
-  const dahlias = await getDahlias({
-    category: toSingle(params?.category),
-    color: toSingle(params?.color),
-  });
+  const [dahlias, heroCoverUrl] = await Promise.all([
+    getDahlias({
+      category: toSingle(params?.category),
+      color: toSingle(params?.color),
+    }),
+    getHeroCoverUrl(),
+  ]);
 
   return (
     <div className="min-h-screen">
       <header className="relative min-h-[45vh] overflow-hidden bg-gradient-to-b from-sage-100/80 to-background">
-        <div className="absolute inset-0 bg-[url('/hero-dahlias.png')] bg-cover bg-center opacity-100" />
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-100"
+          style={{ backgroundImage: `url(${JSON.stringify(heroCoverUrl)})` }}
+        />
       </header>
 
       <section className="border-b border-sage-200/60 bg-background py-12">

@@ -44,6 +44,9 @@ export default async function AdminDashboardPage() {
             <Link href="/admin/inventory">
               <Button variant="outline">Inventory</Button>
             </Link>
+            <Link href="/admin/site">
+              <Button variant="outline">Home hero</Button>
+            </Link>
             <Link href="/admin/dahlias/new">
               <Button>Add Dahlia</Button>
             </Link>

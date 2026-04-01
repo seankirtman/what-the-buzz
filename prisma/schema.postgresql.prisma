@@ -39,3 +39,10 @@ model OrderInquiry {
   cartItems       String
   createdAt       DateTime @default(now())
 }
+
+/// Single-row site config (id is always 1)
+model SiteSettings {
+  id           Int      @id @default(1)
+  heroCoverUrl String?
+  updatedAt    DateTime @updatedAt
+}
