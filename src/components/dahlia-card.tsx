@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Dahlia } from "@/types/dahlia";
+import { isListedAsAvailable } from "@/lib/dahlia-availability";
 
 interface DahliaCardProps {
   dahlia: Dahlia;
@@ -14,6 +15,7 @@ export function DahliaCard({ dahlia }: DahliaCardProps) {
   const imageUrl =
     dahlia.images?.[0] ??
     "https://images.unsplash.com/photo-1597848212624-a19eb35e2651?w=800";
+  const available = isListedAsAvailable(dahlia);
 
   return (
     <Link href={`/dahlias/${dahlia.slug}`} className="block">
@@ -27,10 +29,10 @@ export function DahliaCard({ dahlia }: DahliaCardProps) {
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             unoptimized={imageUrl.startsWith("http")}
           />
-          {!dahlia.inStock && (
+          {!available && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/40">
               <Badge variant="secondary" className="text-sm">
-                Out of Stock
+                Sold out
               </Badge>
             </div>
           )}

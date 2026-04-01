@@ -12,6 +12,9 @@ export interface Dahlia {
   availableForShipping: boolean;
   availableForPickup: boolean;
   inStock: boolean;
+  totalQty: number;
+  qtySold: number;
+  sortOrder: number;
   createdAt: Date | string;
   updatedAt: Date | string;
 }

@@ -2,8 +2,9 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { Suspense } from "react";
-import { isSortOrderUnsupportedError, prisma } from "@/lib/db";
+import { prisma } from "@/lib/db";
 import { getHeroCoverUrl } from "@/lib/site-settings";
+import { isListedAsAvailable } from "@/lib/dahlia-availability";
 import { DahliaCard } from "@/components/dahlia-card";
 import { DahliaFilters } from "@/components/dahlia-filters";
 
@@ -15,21 +16,18 @@ async function getDahlias(filters?: {
   if (filters?.category) where.category = filters.category;
   if (filters?.color) where.color = filters.color;
 
-  const dahlias = await prisma.dahlia
-    .findMany({
-      where,
-      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-    })
-    .catch((error) => {
-      if (!isSortOrderUnsupportedError(error)) throw error;
-      return prisma.dahlia.findMany({
-        where,
-        orderBy: [{ name: "asc" }],
-      });
-    });
+  const dahlias = await prisma.dahlia.findMany({
+    where,
+    orderBy: [{ name: "asc" }],
+  });
 
-  // Out-of-stock items last (sort in memory to avoid SQLite boolean orderBy issues)
-  dahlias.sort((a, b) => (a.inStock === b.inStock ? 0 : a.inStock ? -1 : 1));
+  // In-stock first (A–Z), then sold out (A–Z)
+  dahlias.sort((a, b) => {
+    const avA = isListedAsAvailable(a);
+    const avB = isListedAsAvailable(b);
+    if (avA !== avB) return avA ? -1 : 1;
+    return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+  });
 
   return dahlias.map((d) => ({
     ...d,

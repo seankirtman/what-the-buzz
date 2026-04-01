@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { isListedAsAvailable } from "@/lib/dahlia-availability";
 import { Badge } from "@/components/ui/badge";
 import { AddToCart } from "@/components/add-to-cart";
 import { DahliaImageGallery } from "@/components/dahlia-image-gallery";
@@ -20,6 +21,7 @@ export default async function DahliaDetailPage({
   if (!dahlia) notFound();
 
   const images = JSON.parse(dahlia.images) as string[];
+  const available = isListedAsAvailable(dahlia);
 
   return (
     <div className="min-h-screen">
@@ -51,20 +53,18 @@ export default async function DahliaDetailPage({
               {dahlia.availableForShipping && (
                 <Badge variant="secondary">Shipping available</Badge>
               )}
-              {!dahlia.inStock && (
-                <Badge variant="destructive">Out of stock</Badge>
-              )}
+              {!available && <Badge variant="destructive">Sold out</Badge>}
             </div>
             <p className="mt-6 text-muted-foreground leading-relaxed">
               {dahlia.detailedDescription}
             </p>
 
-            {dahlia.inStock && (
+            {available && (
               <AddToCart
                 slug={dahlia.slug}
                 name={dahlia.name}
                 price={dahlia.price}
-                inStock={dahlia.inStock}
+                inStock={available}
               />
             )}
           </div>
