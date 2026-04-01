@@ -351,8 +351,9 @@ export function DahliaForm({ initialData }: DahliaFormProps) {
           placeholder="0"
         />
         <p className="mt-1 text-xs text-muted-foreground">
-          Starting inventory. Qty sold updates from orders. Uncheck <span className="font-medium">In stock</span>{" "}
-          to hide the listing as sold out without changing these numbers.
+          The site shows available only when <span className="font-medium">In stock</span> is checked and there is
+          remaining inventory (total minus qty sold, greater than zero). If total is 0, it shows as sold out. Uncheck
+          In stock to mark sold out without editing quantities.
         </p>
       </div>
 
