@@ -6,6 +6,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Dahlia } from "@/types/dahlia";
 import { isListedAsAvailable } from "@/lib/dahlia-availability";
+import { presentString } from "@/lib/present-string";
 
 interface DahliaCardProps {
   dahlia: Dahlia;
@@ -16,6 +17,8 @@ export function DahliaCard({ dahlia }: DahliaCardProps) {
     dahlia.images?.[0] ??
     "https://images.unsplash.com/photo-1597848212624-a19eb35e2651?w=800";
   const available = isListedAsAvailable(dahlia);
+  const categoryLabel = presentString(dahlia.category);
+  const colorLabel = presentString(dahlia.color);
 
   return (
     <Link href={`/dahlias/${dahlia.slug}`} className="block">
@@ -45,12 +48,16 @@ export function DahliaCard({ dahlia }: DahliaCardProps) {
             {dahlia.description}
           </p>
           <div className="mt-2 flex flex-wrap gap-1">
-            <Badge variant="outline" className="text-xs">
-              {dahlia.category}
-            </Badge>
-            <Badge variant="outline" className="text-xs">
-              {dahlia.color}
-            </Badge>
+            {categoryLabel && (
+              <Badge variant="outline" className="text-xs">
+                {categoryLabel}
+              </Badge>
+            )}
+            {colorLabel && (
+              <Badge variant="outline" className="text-xs">
+                {colorLabel}
+              </Badge>
+            )}
           </div>
         </CardContent>
         <CardFooter className="flex items-center justify-between border-t border-sage-100/60 bg-sage-50/30 px-4 py-3">

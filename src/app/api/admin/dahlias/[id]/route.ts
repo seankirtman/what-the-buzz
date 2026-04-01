@@ -30,8 +30,8 @@ export async function PUT(
       qtySold,
     } = body;
 
-    const dahlia = await prisma.dahlia.update({
-      where: { id: parseInt(id) },
+    let dahlia = await prisma.dahlia.update({
+      where: { id: parseInt(id, 10) },
       data: {
         ...(name != null && { name }),
         ...(slug != null && {
@@ -53,6 +53,17 @@ export async function PUT(
         ...(qtySold != null && { qtySold: typeof qtySold === "number" ? qtySold : parseInt(qtySold, 10) || 0 }),
       },
     });
+
+    const remaining = Math.max(0, dahlia.totalQty - dahlia.qtySold);
+    if (dahlia.totalQty > 0 || dahlia.qtySold > 0) {
+      const nextInStock = remaining > 0;
+      if (dahlia.inStock !== nextInStock) {
+        dahlia = await prisma.dahlia.update({
+          where: { id: dahlia.id },
+          data: { inStock: nextInStock },
+        });
+      }
+    }
 
     return NextResponse.json({
       ...dahlia,

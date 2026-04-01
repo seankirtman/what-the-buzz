@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { isListedAsAvailable } from "@/lib/dahlia-availability";
+import { presentString } from "@/lib/present-string";
 import { Badge } from "@/components/ui/badge";
 import { AddToCart } from "@/components/add-to-cart";
 import { DahliaImageGallery } from "@/components/dahlia-image-gallery";
@@ -22,6 +23,9 @@ export default async function DahliaDetailPage({
 
   const images = JSON.parse(dahlia.images) as string[];
   const available = isListedAsAvailable(dahlia);
+  const categoryLabel = presentString(dahlia.category);
+  const colorLabel = presentString(dahlia.color);
+  const sizeLabel = presentString(dahlia.size);
 
   return (
     <div className="min-h-screen">
@@ -44,9 +48,9 @@ export default async function DahliaDetailPage({
               ${dahlia.price.toFixed(2)}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <Badge variant="outline">{dahlia.category}</Badge>
-              <Badge variant="outline">{dahlia.color}</Badge>
-              <Badge variant="outline">{dahlia.size}</Badge>
+              {categoryLabel && <Badge variant="outline">{categoryLabel}</Badge>}
+              {colorLabel && <Badge variant="outline">{colorLabel}</Badge>}
+              {sizeLabel && <Badge variant="outline">{sizeLabel}</Badge>}
               {dahlia.availableForPickup && (
                 <Badge variant="secondary">Local pickup</Badge>
               )}
