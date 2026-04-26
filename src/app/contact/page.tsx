@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { normalizeDahliaSlugParam } from "@/lib/dahlia-slug";
 import { ContactForm } from "@/components/contact-form";
 
 export default async function ContactPage({
@@ -10,15 +11,29 @@ export default async function ContactPage({
   searchParams: Promise<{ dahlia?: string }>;
 }) {
   const params = await searchParams;
-  const dahliaSlug = params.dahlia ?? undefined;
+  const rawDahlia = params.dahlia ?? undefined;
 
+  let dahliaSlug: string | undefined;
   let dahliaName: string | undefined;
-  if (dahliaSlug) {
-    const dahlia = await prisma.dahlia.findUnique({
-      where: { slug: dahliaSlug },
-      select: { name: true },
+  if (rawDahlia) {
+    let row = await prisma.dahlia.findUnique({
+      where: { slug: normalizeDahliaSlugParam(rawDahlia) },
+      select: { slug: true, name: true },
     });
-    dahliaName = dahlia?.name;
+    if (!row) {
+      try {
+        row = await prisma.dahlia.findFirst({
+          where: { slug: { equals: rawDahlia, mode: "insensitive" } },
+          select: { slug: true, name: true },
+        });
+      } catch {
+        row = null;
+      }
+    }
+    if (row) {
+      dahliaSlug = row.slug;
+      dahliaName = row.name;
+    }
   }
 
   return (

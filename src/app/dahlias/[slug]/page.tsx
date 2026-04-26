@@ -1,9 +1,10 @@
 export const dynamic = "force-dynamic";
 
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { isListedAsAvailable } from "@/lib/dahlia-availability";
+import { normalizeDahliaSlugParam } from "@/lib/dahlia-slug";
 import { presentString } from "@/lib/present-string";
 import { Badge } from "@/components/ui/badge";
 import { AddToCart } from "@/components/add-to-cart";
@@ -14,12 +15,25 @@ export default async function DahliaDetailPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const { slug } = await params;
-  const dahlia = await prisma.dahlia.findUnique({
-    where: { slug },
+  const { slug: rawSlug } = await params;
+  const normalized = normalizeDahliaSlugParam(rawSlug);
+  let dahlia = await prisma.dahlia.findUnique({
+    where: { slug: normalized },
   });
+  if (!dahlia) {
+    try {
+      dahlia = await prisma.dahlia.findFirst({
+        where: { slug: { equals: rawSlug, mode: "insensitive" } },
+      });
+    } catch {
+      dahlia = null;
+    }
+  }
 
   if (!dahlia) notFound();
+  if (dahlia.slug !== rawSlug) {
+    redirect(`/dahlias/${dahlia.slug}`);
+  }
 
   const images = JSON.parse(dahlia.images) as string[];
   const available = isListedAsAvailable(dahlia);
