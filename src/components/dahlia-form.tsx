@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { isUploadableImageFile } from "@/lib/image-upload-mime";
+import { uploadImageToCloudinary } from "@/lib/admin-cloudinary-upload";
 
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -100,17 +101,7 @@ export function DahliaForm({ initialData }: DahliaFormProps) {
 
     for (const file of imageFiles) {
       try {
-        const body = new FormData();
-        body.append("file", file);
-        const res = await fetch("/api/admin/upload", { method: "POST", body });
-
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          const msg = err.details ? `${err.error}: ${err.details}` : (err.error ?? "Upload failed");
-          throw new Error(msg);
-        }
-
-        const { url } = await res.json();
+        const url = await uploadImageToCloudinary(file);
         setImages((prev) => [...prev, url]);
         successCount++;
       } catch (e) {
@@ -288,7 +279,7 @@ export function DahliaForm({ initialData }: DahliaFormProps) {
                 Click to upload or drag &amp; drop
               </p>
               <p className="text-xs text-muted-foreground/60">
-                JPG, PNG, WebP, HEIC up to 10MB
+                Large phone photos upload directly to Cloudinary (no 10MB server limit)
               </p>
             </>
           )}

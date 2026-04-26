@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { isUploadableImageFile } from "@/lib/image-upload-mime";
+import { uploadImageToCloudinary } from "@/lib/admin-cloudinary-upload";
 import { DEFAULT_HERO_COVER } from "@/lib/site-settings-constants";
 
 interface SiteHeroSettingsFormProps {
@@ -58,14 +59,7 @@ export function SiteHeroSettingsForm({
 
     setUploading(true);
     try {
-      const body = new FormData();
-      body.append("file", file);
-      const res = await fetch("/api/admin/upload", { method: "POST", body });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error ?? "Upload failed");
-      }
-      const { url } = await res.json();
+      const url = await uploadImageToCloudinary(file);
       setHeroCoverUrl(url);
       await save(url);
     } catch (e) {
