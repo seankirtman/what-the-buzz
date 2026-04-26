@@ -19,8 +19,19 @@ export default async function EditDahliaPage({
   if (!dahlia) notFound();
 
   const initialData = {
-    ...dahlia,
+    id: dahlia.id,
+    name: dahlia.name,
+    description: dahlia.description,
+    detailedDescription: dahlia.detailedDescription,
+    price: dahlia.price,
     images: JSON.parse(dahlia.images) as string[],
+    category: dahlia.category,
+    color: dahlia.color,
+    size: dahlia.size,
+    availableForShipping: dahlia.availableForShipping,
+    availableForPickup: dahlia.availableForPickup,
+    inStock: dahlia.inStock,
+    totalQty: dahlia.totalQty,
   };
 
   return (

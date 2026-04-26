@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isSortOrderUnsupportedError, prisma } from "@/lib/db";
 import { isAdmin } from "@/lib/admin-auth";
+import { uniqueDahliaSlugFromName } from "@/lib/dahlia-slug";
 
 export async function POST(request: NextRequest) {
   if (!(await isAdmin())) {
@@ -11,7 +12,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       name,
-      slug,
       description,
       detailedDescription,
       price,
@@ -25,12 +25,22 @@ export async function POST(request: NextRequest) {
       totalQty,
     } = body;
 
-    if (!name || !slug || !description || !detailedDescription || price == null) {
+    if (!name || !String(name).trim() || price == null || price === "") {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Name and price are required" },
         { status: 400 }
       );
     }
+
+    const priceNum = parseFloat(String(price));
+    if (Number.isNaN(priceNum) || priceNum < 0) {
+      return NextResponse.json(
+        { error: "Valid price is required" },
+        { status: 400 }
+      );
+    }
+
+    const slug = await uniqueDahliaSlugFromName(String(name).trim());
 
     let sortOrderData = {};
     try {
@@ -47,15 +57,15 @@ export async function POST(request: NextRequest) {
 
     const dahlia = await prisma.dahlia.create({
       data: {
-        name,
-        slug: slug.toLowerCase().replace(/\s+/g, "-"),
-        description,
-        detailedDescription,
-        price: parseFloat(price),
+        name: String(name).trim(),
+        slug,
+        description: String(description ?? ""),
+        detailedDescription: String(detailedDescription ?? ""),
+        price: priceNum,
         images: JSON.stringify(Array.isArray(images) ? images : images ? [images] : []),
-        category: category ?? "Other",
-        color: color ?? "",
-        size: size ?? "Medium",
+        category: String(category ?? ""),
+        color: String(color ?? ""),
+        size: String(size ?? ""),
         availableForShipping: availableForShipping !== false,
         availableForPickup: availableForPickup !== false,
         inStock: inStock !== false,

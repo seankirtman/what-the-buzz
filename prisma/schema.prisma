@@ -10,13 +10,13 @@ model Dahlia {
   id                    Int      @id @default(autoincrement())
   name                  String
   slug                  String   @unique
-  description           String
-  detailedDescription   String
+  description           String   @default("")
+  detailedDescription   String   @default("")
   price                 Float
-  images                String
-  category              String
-  color                 String
-  size                  String
+  images                String   @default("[]")
+  category              String   @default("")
+  color                 String   @default("")
+  size                  String   @default("")
   availableForShipping  Boolean  @default(true)
   availableForPickup    Boolean  @default(true)
   inStock               Boolean  @default(true)

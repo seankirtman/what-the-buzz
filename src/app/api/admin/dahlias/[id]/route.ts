@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isAdmin } from "@/lib/admin-auth";
+import { uniqueDahliaSlugFromName } from "@/lib/dahlia-slug";
 
 export async function PUT(
   request: NextRequest,
@@ -15,7 +16,6 @@ export async function PUT(
     const body = await request.json();
     const {
       name,
-      slug,
       description,
       detailedDescription,
       price,
@@ -30,27 +30,42 @@ export async function PUT(
       qtySold,
     } = body;
 
+    const dahliaId = parseInt(id, 10);
+
+    if (price != null) {
+      const p = parseFloat(String(price));
+      if (Number.isNaN(p) || p < 0) {
+        return NextResponse.json(
+          { error: "Valid price is required" },
+          { status: 400 }
+        );
+      }
+    }
+
+    const newSlug =
+      name != null
+        ? await uniqueDahliaSlugFromName(String(name).trim(), dahliaId)
+        : undefined;
+
     const dahlia = await prisma.dahlia.update({
-      where: { id: parseInt(id, 10) },
+      where: { id: dahliaId },
       data: {
-        ...(name != null && { name }),
-        ...(slug != null && {
-          slug: slug.toLowerCase().replace(/\s+/g, "-"),
-        }),
-        ...(description != null && { description }),
-        ...(detailedDescription != null && { detailedDescription }),
-        ...(price != null && { price: parseFloat(price) }),
+        ...(name != null && { name: String(name).trim() }),
+        ...(newSlug != null && { slug: newSlug }),
+        ...(description != null && { description: String(description) }),
+        ...(detailedDescription != null && { detailedDescription: String(detailedDescription) }),
+        ...(price != null && { price: parseFloat(String(price)) }),
         ...(images != null && {
           images: JSON.stringify(Array.isArray(images) ? images : images ? [images] : []),
         }),
-        ...(category != null && { category }),
-        ...(color != null && { color }),
-        ...(size != null && { size }),
+        ...(category != null && { category: String(category) }),
+        ...(color != null && { color: String(color) }),
+        ...(size != null && { size: String(size) }),
         ...(availableForShipping != null && { availableForShipping }),
         ...(availableForPickup != null && { availableForPickup }),
         ...(inStock != null && { inStock }),
-        ...(totalQty != null && { totalQty: typeof totalQty === "number" ? totalQty : parseInt(totalQty, 10) || 0 }),
-        ...(qtySold != null && { qtySold: typeof qtySold === "number" ? qtySold : parseInt(qtySold, 10) || 0 }),
+        ...(totalQty != null && { totalQty: typeof totalQty === "number" ? totalQty : parseInt(String(totalQty), 10) || 0 }),
+        ...(qtySold != null && { qtySold: typeof qtySold === "number" ? qtySold : parseInt(String(qtySold), 10) || 0 }),
       },
     });
 

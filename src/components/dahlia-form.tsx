@@ -17,11 +17,19 @@ import { uploadImageToCloudinary } from "@/lib/admin-cloudinary-upload";
 
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
-  slug: z.string().min(1, "Slug is required"),
-  description: z.string().min(1, "Description is required"),
-  detailedDescription: z.string().min(1, "Detailed description is required"),
-  price: z.string().min(1, "Price is required"),
-  category: z.string().min(1, "Category is required"),
+  description: z.string(),
+  detailedDescription: z.string(),
+  price: z
+    .string()
+    .min(1, "Price is required")
+    .refine(
+      (v) => {
+        const n = parseFloat(v);
+        return !Number.isNaN(n) && n >= 0;
+      },
+      { message: "Enter a valid price" }
+    ),
+  category: z.string(),
   color: z.string(),
   size: z.string(),
   availableForShipping: z.boolean(),
@@ -36,7 +44,6 @@ interface DahliaFormProps {
   initialData?: {
     id: number;
     name: string;
-    slug: string;
     description: string;
     detailedDescription: string;
     price: number;
@@ -63,13 +70,12 @@ export function DahliaForm({ initialData }: DahliaFormProps) {
     resolver: zodResolver(schema),
     defaultValues: {
       name: initialData?.name ?? "",
-      slug: initialData?.slug ?? "",
       description: initialData?.description ?? "",
       detailedDescription: initialData?.detailedDescription ?? "",
       price: initialData?.price?.toString() ?? "",
-      category: initialData?.category ?? "Decorative",
+      category: initialData?.category ?? "",
       color: initialData?.color ?? "",
-      size: initialData?.size ?? "Medium",
+      size: initialData?.size ?? "",
       availableForShipping: initialData?.availableForShipping ?? true,
       availableForPickup: initialData?.availableForPickup ?? true,
       inStock: initialData?.inStock ?? true,
@@ -129,8 +135,9 @@ export function DahliaForm({ initialData }: DahliaFormProps) {
 
   async function onSubmit(data: FormData) {
     try {
+      const { ...rest } = data;
       const payload = {
-        ...data,
+        ...rest,
         price: parseFloat(data.price),
         totalQty: parseInt(data.totalQty, 10) || 0,
         images,
@@ -167,7 +174,7 @@ export function DahliaForm({ initialData }: DahliaFormProps) {
       className="space-y-6 rounded-xl border border-sage-200/60 bg-white p-6 shadow-sm"
     >
       <div>
-        <Label htmlFor="name">Name</Label>
+        <Label htmlFor="name">Name *</Label>
         <Input id="name" {...form.register("name")} className="mt-1" placeholder="Café au Lait" />
         {form.formState.errors.name && (
           <p className="mt-1 text-sm text-destructive">{form.formState.errors.name.message}</p>
@@ -175,38 +182,27 @@ export function DahliaForm({ initialData }: DahliaFormProps) {
       </div>
 
       <div>
-        <Label htmlFor="slug">Slug (URL)</Label>
-        <Input id="slug" {...form.register("slug")} className="mt-1" placeholder="cafe-au-lait" />
-      </div>
-
-      <div>
-        <Label htmlFor="description">Short description</Label>
+        <Label htmlFor="description">Short description (optional)</Label>
         <Textarea
           id="description"
           {...form.register("description")}
           className="mt-1 min-h-[80px]"
           placeholder="Brief description for cards..."
         />
-        {form.formState.errors.description && (
-          <p className="mt-1 text-sm text-destructive">{form.formState.errors.description.message}</p>
-        )}
       </div>
 
       <div>
-        <Label htmlFor="detailedDescription">Detailed description</Label>
+        <Label htmlFor="detailedDescription">Detailed description (optional)</Label>
         <Textarea
           id="detailedDescription"
           {...form.register("detailedDescription")}
           className="mt-1 min-h-[120px]"
           placeholder="Full description for detail page..."
         />
-        {form.formState.errors.detailedDescription && (
-          <p className="mt-1 text-sm text-destructive">{form.formState.errors.detailedDescription.message}</p>
-        )}
       </div>
 
       <div>
-        <Label htmlFor="price">Price ($)</Label>
+        <Label htmlFor="price">Price ($) *</Label>
         <Input
           id="price"
           type="number"
@@ -221,7 +217,7 @@ export function DahliaForm({ initialData }: DahliaFormProps) {
       </div>
 
       <div>
-        <Label>Images</Label>
+        <Label>Images (optional)</Label>
 
         {images.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-4">
@@ -301,18 +297,18 @@ export function DahliaForm({ initialData }: DahliaFormProps) {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-3">
         <div>
-          <Label htmlFor="category">Category</Label>
-          <Input id="category" {...form.register("category")} className="mt-1" placeholder="Decorative" />
+          <Label htmlFor="category">Category (optional)</Label>
+          <Input id="category" {...form.register("category")} className="mt-1" placeholder="e.g. Dinnerplate" />
         </div>
         <div>
-          <Label htmlFor="color">Color</Label>
-          <Input id="color" {...form.register("color")} className="mt-1" placeholder="Cream/Blush" />
+          <Label htmlFor="color">Color (optional)</Label>
+          <Input id="color" {...form.register("color")} className="mt-1" placeholder="e.g. Pink" />
         </div>
         <div>
-          <Label htmlFor="size">Size</Label>
-          <Input id="size" {...form.register("size")} className="mt-1" placeholder="Medium" />
+          <Label htmlFor="size">Size (optional)</Label>
+          <Input id="size" {...form.register("size")} className="mt-1" placeholder="e.g. Medium" />
         </div>
       </div>
 
@@ -332,7 +328,7 @@ export function DahliaForm({ initialData }: DahliaFormProps) {
       </div>
 
       <div>
-        <Label htmlFor="totalQty">Total quantity (inventory)</Label>
+        <Label htmlFor="totalQty">Total quantity (optional)</Label>
         <Input
           id="totalQty"
           type="number"

@@ -40,6 +40,7 @@ export default async function DahliaDetailPage({
   const categoryLabel = presentString(dahlia.category);
   const colorLabel = presentString(dahlia.color);
   const sizeLabel = presentString(dahlia.size);
+  const detailText = presentString(dahlia.detailedDescription);
 
   return (
     <div className="min-h-screen">
@@ -73,9 +74,9 @@ export default async function DahliaDetailPage({
               )}
               {!available && <Badge variant="destructive">Sold out</Badge>}
             </div>
-            <p className="mt-6 text-muted-foreground leading-relaxed">
-              {dahlia.detailedDescription}
-            </p>
+            {detailText && (
+              <p className="mt-6 text-muted-foreground leading-relaxed">{detailText}</p>
+            )}
 
             {available && (
               <AddToCart

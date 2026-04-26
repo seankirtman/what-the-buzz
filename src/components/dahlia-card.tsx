@@ -19,6 +19,7 @@ export function DahliaCard({ dahlia }: DahliaCardProps) {
   const available = isListedAsAvailable(dahlia);
   const categoryLabel = presentString(dahlia.category);
   const colorLabel = presentString(dahlia.color);
+  const blurb = presentString(dahlia.description);
 
   return (
     <Link href={`/dahlias/${dahlia.slug}`} className="block">
@@ -44,9 +45,9 @@ export function DahliaCard({ dahlia }: DahliaCardProps) {
           <h3 className="font-serif text-xl font-semibold text-foreground">
             {dahlia.name}
           </h3>
-          <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-            {dahlia.description}
-          </p>
+          {blurb && (
+            <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{blurb}</p>
+          )}
           <div className="mt-2 flex flex-wrap gap-1">
             {categoryLabel && (
               <Badge variant="outline" className="text-xs">
